@@ -36,6 +36,19 @@ async function run() {
         const orderCollection = client.db('E-tools').collection('orders');
         const reviewCollection = client.db('E-tools').collection('reviews');
 
+
+        const verifyAdmin = async (req, res, next) => {
+            const requester = req.decoded.email;
+            const requesterAccount = await userCollection.findOne({ email: requester });
+            if (requesterAccount.role === 'admin') {
+                next();
+            }
+            else {
+                res.status(403).send({ message: 'forbidden' });
+            }
+        }
+
+
         app.get('/users', verifyJWT, async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
@@ -119,6 +132,13 @@ async function run() {
             else {
                 return res.status(403).send({ message: 'forbidden access' });
             }
+        })
+
+        app.get('/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({ email: email });
+            const isAdmin = user.role === 'admin';
+            res.send({ admin: isAdmin })
         })
 
     }
