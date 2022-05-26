@@ -49,7 +49,7 @@ async function run() {
         }
 
 
-        app.get('/users', verifyJWT, async (req, res) => {
+        app.get('/users', async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
         });
@@ -103,6 +103,11 @@ async function run() {
             const products = await productCollection.find().toArray();
             res.send(products);
         })
+        app.post('/products', async (req, res) => {
+            const newProduct = req.body;
+            const result = await productCollection.insertOne(newProduct);
+            res.send(result);
+        });
         app.get('/products/:id', async (req, res) => {
             const id = req.params.id;
             console.log(typeof (id));
@@ -110,27 +115,6 @@ async function run() {
             const product = await productCollection.findOne(query);
             res.send(product);
         });
-        // app.get('/available', async (req, res) => {
-        //     const date = req.query.date;
-
-        //     // step 1:  get all services
-        //     const services = await serviceCollection.find().toArray();
-
-        //     // step 2: get the booking of that day. output: [{}, {}, {}, {}, {}, {}]
-        //     const query = { date: date };
-        //     const bookings = await bookingCollection.find(query).toArray();
-
-        //     // step 3: for each service
-        //     services.forEach(service => {
-        //         // step 4: find bookings for that service. output: [{}, {}, {}, {}]
-        //         const serviceBookings = bookings.filter(book => book.treatment === service.name);
-        //         // step 5: select slots for the service Bookings: ['', '', '', '']
-        //         const bookedSlots = serviceBookings.map(book => book.slot);
-        //         // step 6: select those slots that are not in bookedSlots
-        //         const available = service.slots.filter(slot => !bookedSlots.includes(slot));
-        //         //step 7: set available to slots to make it easier 
-        //         service.slots = available;
-        //     });
         app.post('/orders', async (req, res) => {
             const orders = req.body;
             const result = await orderCollection.insertOne(orders);
