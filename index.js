@@ -1,10 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
+
 
 app.use(cors());
 app.use(express.json());
@@ -32,10 +33,18 @@ async function run() {
         await client.connect();
         const userCollection = client.db('E-tools').collection('users');
         const productCollection = client.db('E-tools').collection('products');
+        const orderCollection = client.db('E-tools').collection('orders');
 
-        app.get('/user', verifyJWT, async (req, res) => {
+        app.get('/users', verifyJWT, async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
+        });
+        app.get('/user/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(typeof (id));
+            const query = { _id: ObjectId(id) };
+            const product = await userCollection.findOne(query);
+            res.send(product);
         });
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
@@ -53,6 +62,13 @@ async function run() {
             const products = await productCollection.find().toArray();
             res.send(products);
         })
+        app.get('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(typeof (id));
+            const query = { _id: ObjectId(id) };
+            const product = await productCollection.findOne(query);
+            res.send(product);
+        });
         // app.get('/available', async (req, res) => {
         //     const date = req.query.date;
 
@@ -74,6 +90,23 @@ async function run() {
         //         //step 7: set available to slots to make it easier 
         //         service.slots = available;
         //     });
+        app.post('/orders', async (req, res) => {
+            const orders = req.body;
+            const result = await orderCollection.insertOne(orders);
+            return res.send({ success: true, result });
+        });
+        app.get('/orders', verifyJWT, async (req, res) => {
+            const email = req.query.email;
+            const decodedEmail = req.decoded.email;
+            if (email === decodedEmail) {
+                const query = { userEmail: email };
+                const orders = await orderCollection.find(query).toArray();
+                return res.send(orders);
+            }
+            else {
+                return res.status(403).send({ message: 'forbidden access' });
+            }
+        })
 
     }
     finally {
