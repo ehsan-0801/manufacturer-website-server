@@ -34,6 +34,7 @@ async function run() {
         const userCollection = client.db('E-tools').collection('users');
         const productCollection = client.db('E-tools').collection('products');
         const orderCollection = client.db('E-tools').collection('orders');
+        const reviewCollection = client.db('E-tools').collection('reviews');
 
         app.get('/users', verifyJWT, async (req, res) => {
             const users = await userCollection.find().toArray();
@@ -55,6 +56,18 @@ async function run() {
                 $set: user,
             };
             const result = await userCollection.updateOne(filter, updateDoc, options);
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send({ result, token });
+        });
+        app.put('/review/:email', async (req, res) => {
+            const email = req.params.email;
+            const reviews = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: reviews,
+            };
+            const result = await reviewCollection.updateOne(filter, updateDoc, options);
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
             res.send({ result, token });
         });
