@@ -99,6 +99,10 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
             res.send({ result, token });
         });
+        app.get('/reviews', async (req, res) => {
+            const reviews = await reviewCollection.find().toArray();
+            res.send(reviews);
+        });
         app.get('/products', async (req, res) => {
             const products = await productCollection.find().toArray();
             res.send(products);
