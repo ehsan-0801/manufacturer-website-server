@@ -72,6 +72,21 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
             res.send({ result, token });
         });
+        app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const updateDoc = {
+                $set: { role: 'admin' },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+        app.delete('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const result = await userCollection.deleteOne(filter);
+            res.send(result);
+        })
         app.put('/review/:email', async (req, res) => {
             const email = req.params.email;
             const reviews = req.body;
@@ -120,6 +135,10 @@ async function run() {
             const orders = req.body;
             const result = await orderCollection.insertOne(orders);
             return res.send({ success: true, result });
+        });
+        app.get('/allorder', async (req, res) => {
+            const orders = await orderCollection.find().toArray();
+            res.send(orders);
         });
         app.get('/orders', verifyJWT, async (req, res) => {
             const email = req.query.email;
