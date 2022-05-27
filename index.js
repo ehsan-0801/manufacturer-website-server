@@ -135,26 +135,12 @@ async function run() {
             const result = await productCollection.insertOne(newProduct);
             res.send(result);
         });
-        app.get('/products/:id', async (req, res) => {
+        app.delete('/product/:id', async (req, res) => {
             const id = req.params.id;
-            console.log(typeof (id));
-            const query = { _id: ObjectId(id) };
-            const product = await productCollection.findOne(query);
-            res.send(product);
-        });
-        app.patch('/products/:productName', async (req, res) => {
-            const Name = req.params.productName;
-            const order = req.body;
-            const filter = { Name: Name };
-            QuantityAvailable = QuantityAvailable - order.OrderQuantity;
-            const updateDoc = {
-                $set: {
-                    QuantityAvailable,
-                },
-            };
-            const result = await productCollection.updateOne(filter, updateDoc);
+            const filter = { _id: ObjectId(id) };
+            const result = await productCollection.deleteOne(filter);
             res.send(result);
-        });
+        })
 
 
 
