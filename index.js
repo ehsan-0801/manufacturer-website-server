@@ -36,6 +36,7 @@ async function run() {
         const orderCollection = client.db('E-tools').collection('orders');
         const reviewCollection = client.db('E-tools').collection('reviews');
         const paymentCollection = client.db('E-tools').collection('payments');
+        const feedback = client.db('E-tools').collection('feedback');
 
         const verifyAdmin = async (req, res, next) => {
             const requester = req.decoded.email;
@@ -210,6 +211,12 @@ async function run() {
             const isAdmin = user.role === 'admin';
             res.send({ admin: isAdmin })
         })
+
+        app.post('/feedback', async (req, res) => {
+            const newfeedback = req.body;
+            const result = await feedback.insertOne(newfeedback);
+            res.send(result);
+        });
 
     }
     finally {
