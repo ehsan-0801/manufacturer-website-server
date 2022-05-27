@@ -60,6 +60,8 @@ async function run() {
             res.send({ clientSecret: paymentIntent.client_secret })
         });
 
+
+
         app.get('/users', async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
@@ -83,6 +85,10 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
             res.send({ result, token });
         });
+
+
+
+
         app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
@@ -98,6 +104,9 @@ async function run() {
             const result = await userCollection.deleteOne(filter);
             res.send(result);
         })
+
+
+
         app.put('/review/:email', async (req, res) => {
             const email = req.params.email;
             const reviews = req.body;
@@ -114,6 +123,9 @@ async function run() {
             const reviews = await reviewCollection.find().toArray();
             res.send(reviews);
         });
+
+
+
         app.get('/products', async (req, res) => {
             const products = await productCollection.find().toArray();
             res.send(products);
@@ -130,6 +142,22 @@ async function run() {
             const product = await productCollection.findOne(query);
             res.send(product);
         });
+        app.patch('/products/:productName', async (req, res) => {
+            const Name = req.params.productName;
+            const order = req.body;
+            const filter = { Name: Name };
+            QuantityAvailable = QuantityAvailable - order.OrderQuantity;
+            const updateDoc = {
+                $set: {
+                    QuantityAvailable,
+                },
+            };
+            const result = await productCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        });
+
+
+
         app.post('/orders', async (req, res) => {
             const orders = req.body;
             const result = await orderCollection.insertOne(orders);
@@ -150,6 +178,17 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const orders = await orderCollection.findOne(query);
             res.send(orders);
+        })
+        app.patch('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    status: "Shipped",
+                }
+            }
+            const updatedorder = await orderCollection.updateOne(filter, updatedDoc);
+            res.send(updatedorder);
         })
         app.patch('/orders/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
